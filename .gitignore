@@ -1,0 +1,9 @@
+# PLACEHOLDER — overwritten by .release/scripts/whitelist_to_gitignore.py
+# at release-pruning skill Stage 1 step 5 (apply templates phase).
+# DO NOT maintain this file by hand. Source of truth: .release/whitelist.txt
+#
+# Skill workflow: Stage 1 step 5 copies this placeholder into worktree's
+# .gitignore location, then immediately runs whitelist_to_gitignore.py to
+# regenerate exact parent/leaf inversion rules. The generated file ignores
+# non-whitelist paths at every directory level, preventing both top-level
+# artifacts and additions such as `kernels/evil.cu` from accidental staging.
