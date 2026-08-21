@@ -13,7 +13,7 @@ custom operators.
 
 ```
 .
-├── 3rdparty/cutlass/               # CUTLASS dependency (submodule)
+├── 3rdparty/cutlass/               # Vendored CUTLASS source tree
 ├── kernels/
 │   ├── include/
 │   │   └── cute_sm120_mxfp8_groupwise/
@@ -86,12 +86,43 @@ For Psum layout on a non-SwapAB route, every cumulative expert boundary in
 - GPU: NVIDIA Blackwell RTX (SM 120a)
 - CUDA: 12.8 or above
 - PyTorch: 2.1 or above
-- CUTLASS: cloned via Git submodule
+- This release already includes `3rdparty/cutlass`
+
+### Recommended container
+
+The validated environment for this release is a PyTorch container with CUDA 13.
+One working example is:
+
+```bash
+docker run --gpus all --rm -it \
+  -v $PWD:/workspace/sm120_block_scale_gemm \
+  -w /workspace/sm120_block_scale_gemm \
+  nvcr.io/nvidia/pytorch:26.05-py3 \
+  bash
+```
+
+Inside the container, use:
+
+```bash
+python build.py
+```
+
+If `torch.compile` test setup hits a user/cache error in a container without a
+passwd entry for the runtime uid, export:
+
+```bash
+export HOME=/tmp/xiy-home
+export USER=xiy
+export LOGNAME=xiy
+export XDG_CACHE_HOME=/tmp/xiy-cache
+export TORCHINDUCTOR_CACHE_DIR=/tmp/xiy-cache/inductor
+mkdir -p "$HOME" "$TORCHINDUCTOR_CACHE_DIR"
+```
 
 ### Build
 
 ```bash
-# From the source root (cutlass submodule must be initialized)
+# From the source root
 python build.py
 ```
 
