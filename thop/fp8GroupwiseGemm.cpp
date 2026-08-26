@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "cute_sm120_mxfp8_groupwise/cute_sm120_fp8_runner.h"
+#include "cute_sm120_gemm/cute_sm120_fp8_runner.h"
 
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
@@ -26,7 +26,7 @@
 #include <memory>
 #include <vector>
 
-using namespace mxfp8_cute_sm120;
+using namespace cute_sm120_gemm;
 
 namespace torch_ext
 {

@@ -16,14 +16,14 @@ custom operators.
 ├── 3rdparty/cutlass/               # Vendored CUTLASS source tree
 ├── kernels/
 │   ├── include/
-│   │   └── cute_sm120_mxfp8_groupwise/
+│   │   └── cute_sm120_gemm/
 │   │       ├── cute_sm120_mxfp8_runner.h
 │   │       ├── cute_sm120_fp8_runner.h
 │   │       ├── sm120_blockscaled/   # MXFP8 kernel templates and builders
 │   │       ├── sm120_blockscaling/  # FP8 float-scale kernel templates
 │   │       └── sm120_common/        # Shared scheduler / TMA / epilogue helpers
 │   └── src/
-│       └── cute_sm120_mxfp8_groupwise/
+│       └── cute_sm120_gemm/
 │           ├── cute_sm120_mxfp8_runner.cu
 │           └── cute_sm120_fp8_runner.cu
 ├── thop/

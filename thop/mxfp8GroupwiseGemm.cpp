@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "cute_sm120_mxfp8_groupwise/cute_sm120_mxfp8_runner.h"
+#include "cute_sm120_gemm/cute_sm120_mxfp8_runner.h"
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <c10/core/DeviceType.h>
@@ -43,7 +43,7 @@
     CHECK_CONTIGUOUS(x);                                                       \
     CHECK_TYPE(x, st)
 
-using namespace mxfp8_cute_sm120;
+using namespace cute_sm120_gemm;
 
 namespace torch_ext
 {
@@ -503,7 +503,7 @@ std::tuple<torch::Tensor, torch::Tensor> fp8_quant_and_transform_for_moe(
 
     auto stream = at::cuda::getCurrentCUDAStream(input.get_device());
 
-    mxfp8_cute_sm120::quantize_mxfp8_for_moe(
+    cute_sm120_gemm::quantize_mxfp8_for_moe(
         output.data_ptr(),
         outScale.data_ptr(),
         input.data_ptr(),
