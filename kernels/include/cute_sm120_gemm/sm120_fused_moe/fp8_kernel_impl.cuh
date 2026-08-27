@@ -747,7 +747,13 @@ struct SM120BlockScalingFusedMoeGemmKernel
       if constexpr (KT::SFConfig::kTileScaleM > 1 && KT::SFConfig::kTileScaleN == 1) {
         CUTLASS_PRAGMA_UNROLL
         for (int i = 0; i < size(accum_up); ++i) {
-          accum_up(i) += tmp_accum(i) * tCrSFAViewAsC_up(i);
+          if constexpr (KT::kUseM128N64RegisterReallocation) {
+            typename KT::ElementScale scale_ab =
+                tCrSFAViewAsC_up(i) * tCrSFBViewAsC_up.data()[0];
+            accum_up(i) += tmp_accum(i) * scale_ab;
+          } else {
+            accum_up(i) += tmp_accum(i) * tCrSFAViewAsC_up(i);
+          }
           tmp_accum(i) = 0.0f;
         }
       }
@@ -778,7 +784,13 @@ struct SM120BlockScalingFusedMoeGemmKernel
       if constexpr (KT::SFConfig::kTileScaleM > 1 && KT::SFConfig::kTileScaleN == 1) {
         CUTLASS_PRAGMA_UNROLL
         for (int i = 0; i < size(accum_gate); ++i) {
-          accum_gate(i) += tmp_accum(i) * tCrSFAViewAsC_gate(i);
+          if constexpr (KT::kUseM128N64RegisterReallocation) {
+            typename KT::ElementScale scale_ab =
+                tCrSFAViewAsC_up(i) * tCrSFBViewAsC_gate.data()[0];
+            accum_gate(i) += tmp_accum(i) * scale_ab;
+          } else {
+            accum_gate(i) += tmp_accum(i) * tCrSFAViewAsC_gate(i);
+          }
           tmp_accum(i) = 0.0f;
         }
       }
@@ -804,9 +816,11 @@ struct SM120BlockScalingFusedMoeGemmKernel
       cute::copy(
           tCsSFAViewAsC(_, _, _, read_stage),
           tCrSFAViewAsC_up);
-      cute::copy(
-          tCsSFAViewAsC(_, _, _, read_stage),
-          tCrSFAViewAsC_gate);
+      if constexpr (!KT::kUseM128N64RegisterReallocation) {
+        cute::copy(
+            tCsSFAViewAsC(_, _, _, read_stage),
+            tCrSFAViewAsC_gate);
+      }
       cute::copy(
           tCsSFBViewAsC_up(_, _, _, read_stage),
           tCrSFBViewAsC_up);
@@ -818,12 +832,14 @@ struct SM120BlockScalingFusedMoeGemmKernel
         tCrSFAViewAsC_gate.data()[0] *= tCrSFBViewAsC_gate.data()[0];
       }
       if constexpr (KT::SFConfig::kTileScaleM > 1 && KT::SFConfig::kTileScaleN == 1) {
-        typename KT::ElementScale scale_b_up = tCrSFBViewAsC_up.data()[0];
-        typename KT::ElementScale scale_b_gate = tCrSFBViewAsC_gate.data()[0];
-        CUTLASS_PRAGMA_UNROLL
-        for (int i = 0; i < size(tCrSFAViewAsC_up); ++i) {
-          tCrSFAViewAsC_up.data()[i] *= scale_b_up;
-          tCrSFAViewAsC_gate.data()[i] *= scale_b_gate;
+        if constexpr (!KT::kUseM128N64RegisterReallocation) {
+          typename KT::ElementScale scale_b_up = tCrSFBViewAsC_up.data()[0];
+          typename KT::ElementScale scale_b_gate = tCrSFBViewAsC_gate.data()[0];
+          CUTLASS_PRAGMA_UNROLL
+          for (int i = 0; i < size(tCrSFAViewAsC_up); ++i) {
+            tCrSFAViewAsC_up.data()[i] *= scale_b_up;
+            tCrSFAViewAsC_gate.data()[i] *= scale_b_gate;
+          }
         }
       }
       if constexpr (KT::SFConfig::kTileScaleM == 1 && KT::SFConfig::kTileScaleN > 1) {
@@ -957,7 +973,13 @@ struct SM120BlockScalingFusedMoeGemmKernel
     if constexpr (KT::SFConfig::kTileScaleM > 1 && KT::SFConfig::kTileScaleN == 1) {
       CUTLASS_PRAGMA_UNROLL
       for (int i = 0; i < size(accum_gate); ++i) {
-        accum_gate(i) += tmp_accum(i) * tCrSFAViewAsC_gate(i);
+        if constexpr (KT::kUseM128N64RegisterReallocation) {
+          typename KT::ElementScale scale_ab =
+              tCrSFAViewAsC_up(i) * tCrSFBViewAsC_gate.data()[0];
+          accum_gate(i) += tmp_accum(i) * scale_ab;
+        } else {
+          accum_gate(i) += tmp_accum(i) * tCrSFAViewAsC_gate(i);
+        }
         tmp_accum(i) = __expf(-accum_gate(i));
       }
     }
