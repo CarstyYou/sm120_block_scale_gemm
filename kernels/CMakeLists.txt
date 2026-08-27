@@ -11,7 +11,8 @@
 
 set(INTERNAL_SRC_CU
     src/cute_sm120_gemm/cute_sm120_mxfp8_runner.cu
-    src/cute_sm120_gemm/cute_sm120_fp8_runner.cu)
+    src/cute_sm120_gemm/cute_sm120_fp8_runner.cu
+    src/cute_sm120_gemm/cute_sm120_bf16_runner.cu)
 
 add_library(${BLOCK_SCALE_KERNELS_STATIC_TARGET} STATIC
             ${INTERNAL_SRC_CU})

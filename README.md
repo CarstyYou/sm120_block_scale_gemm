@@ -1,10 +1,10 @@
-# SM120 MXFP8 / FP8 Groupwise GEMM
+# SM120 MXFP8 / FP8 / BF16 GEMM
 
 ## Purpose
 
 Optimized GEMM kernels for NVIDIA Blackwell RTX (SM 120/120a). The package
-contains MXFP8 groupwise kernels with UE8M0 scale factors and dense FP8
-blockwise kernels with float scale factors.
+contains MXFP8 groupwise kernels with UE8M0 scale factors, FP8 blockwise
+kernels with float scale factors, and BF16 dense/batched/grouped/MoE kernels.
 
 Implementation uses CuTe directly (layout / TMA / QMMA), exposed as PyTorch
 custom operators.
@@ -19,16 +19,20 @@ custom operators.
 │   │   └── cute_sm120_gemm/
 │   │       ├── cute_sm120_mxfp8_runner.h
 │   │       ├── cute_sm120_fp8_runner.h
+│   │       ├── cute_sm120_bf16_runner.h
 │   │       ├── sm120_blockscaled/   # MXFP8 kernel templates and builders
 │   │       ├── sm120_blockscaling/  # FP8 float-scale kernel templates
+│   │       ├── sm120_bf16/           # BF16 kernel templates and builders
 │   │       └── sm120_common/        # Shared scheduler / TMA / epilogue helpers
 │   └── src/
 │       └── cute_sm120_gemm/
 │           ├── cute_sm120_mxfp8_runner.cu
-│           └── cute_sm120_fp8_runner.cu
+│           ├── cute_sm120_fp8_runner.cu
+│           └── cute_sm120_bf16_runner.cu
 ├── thop/
 │   ├── mxfp8GroupwiseGemm.cpp      # MXFP8 PyTorch op bindings
-│   └── fp8GroupwiseGemm.cpp        # FP8 PyTorch op bindings
+│   ├── fp8GroupwiseGemm.cpp        # FP8 PyTorch op bindings
+│   └── bf16Gemm.cpp                # BF16 PyTorch op bindings
 ├── test/                           # Customer-facing unit tests
 ├── CMakeLists.txt
 └── build.py                        # cmake + make wrapper
@@ -48,6 +52,12 @@ custom operators.
 | MoE FP8 GEMM | unpadded A + `token_offset[E+1]` | `moe_gemm_fp8_nt_groupwise` |
 | Contiguous MoE MXFP8 GEMM | DeepGEMM-style A + `m_indices` | `group_gemm_mxfp8_nt_groupwise_contiguous` |
 | Contiguous MoE FP8 GEMM | DeepGEMM-style A + `m_indices` | `group_gemm_fp8_nt_groupwise_contiguous` |
+| Dense BF16 GEMM | `[M, N, K]` | `gemm_bf16` |
+| Batched BF16 GEMM | `[M, N, K, L]` | `batch_gemm_bf16` |
+| Masked grouped BF16 GEMM | `[max_m, N, K, E]` + `masked_m` | `group_gemm_bf16_masked` |
+| MoE BF16 GEMM | unpadded A + `token_offset[E+1]` | `moe_gemm_bf16` |
+| Fused gated BF16 MoE | `B[E,2N,K]=[Up,Gate]` | `fused_moe_bf16` |
+| Contiguous/Psum BF16 GEMM | A + `m_indices` | `group_gemm_bf16_contiguous` |
 
 ## Python ops
 
@@ -68,6 +78,13 @@ Bindings registered under `torch.ops.custom_ops`:
 | `group_gemm_fp8_nt_groupwise_masked` | `(mat1, mat2, sf1, sf2, masked_m, granM, granN, granK) -> Tensor` |
 | `moe_gemm_fp8_nt_groupwise` | `(mat1, mat2, sf1, sf2, token_offset, granM, granN, granK) -> Tensor` |
 | `group_gemm_fp8_nt_groupwise_contiguous` | `(mat1, mat2, sf1, sf2, m_indices, granM, granN, granK, use_psum_layout=False) -> Tensor` |
+| `gemm_bf16` | `(mat1, mat2) -> Tensor` |
+| `batch_gemm_bf16` | `(mat1, mat2) -> Tensor` |
+| `batch_gemm_bf16_out` | `(mat1, mat2, out) -> Tensor(a!)` |
+| `group_gemm_bf16_masked` | `(mat1, mat2, masked_m) -> Tensor` |
+| `moe_gemm_bf16` | `(mat1, mat2, token_offset) -> Tensor` |
+| `fused_moe_bf16` | `(mat1, mat2, token_offset) -> Tensor` |
+| `group_gemm_bf16_contiguous` | `(mat1, mat2, m_indices, use_psum_layout=False) -> Tensor` |
 
 FP8 accepts only `(granM, granN, granK) = (1,128,128)`. SwapAB routes require
 contiguous SFA. Non-SwapAB routes require a 16-byte-aligned logical `[Kb,M]`
@@ -134,6 +151,7 @@ python build.py
 ```bash
 python -m pytest -q test/test_fp8.py
 python -m pytest -q test/test_mxfp8.py
+python test/test_bf16.py
 ```
 
 `test/benchmark.py` includes the `bench_kineto` helper used by the shipped

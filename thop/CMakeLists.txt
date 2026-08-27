@@ -29,7 +29,8 @@ message(STATUS "BLOCK_SCALE_KERNELS_STATIC_TARGET: ${BLOCK_SCALE_KERNELS_STATIC_
 add_library(
   th_op SHARED
   mxfp8GroupwiseGemm.cpp
-  fp8GroupwiseGemm.cpp)
+  fp8GroupwiseGemm.cpp
+  bf16Gemm.cpp)
 set_property(TARGET th_op PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(th_op PUBLIC ${TORCH_LIBRARIES}
                                         ${Python3_LIBRARIES} ${BLOCK_SCALE_KERNELS_STATIC_TARGET})
