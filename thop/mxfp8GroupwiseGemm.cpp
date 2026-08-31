@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "cute_sm120_gemm/cute_sm120_mxfp8_runner.h"
+#include "cute_sm12x_gemm/cute_sm12x_mxfp8_runner.h"
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
 #include <c10/core/DeviceType.h>
@@ -43,7 +43,7 @@
     CHECK_CONTIGUOUS(x);                                                       \
     CHECK_TYPE(x, st)
 
-using namespace cute_sm120_gemm;
+using namespace cute_sm12x_gemm;
 
 namespace torch_ext
 {
@@ -72,7 +72,7 @@ void check_input_dtypes(torch::Tensor const& mat, torch::Tensor const& matScale)
 }
 
 using Fp8BlockScaleGemmRunnerPtr =
-    std::unique_ptr<CuteSm120Mxfp8GemmRunnerInterface>;
+    std::unique_ptr<CuteSm12xMxfp8GemmRunnerInterface>;
 
 Fp8BlockScaleGemmRunnerPtr get_gemm_runner(at::ScalarType a_type,
                                            at::ScalarType b_type)
@@ -80,7 +80,7 @@ Fp8BlockScaleGemmRunnerPtr get_gemm_runner(at::ScalarType a_type,
     if (a_type == at::ScalarType::Float8_e4m3fn &&
              b_type == at::ScalarType::Float8_e4m3fn)
     {
-        return std::make_unique<CuteSm120Mxfp8GemmRunner<
+        return std::make_unique<CuteSm12xMxfp8GemmRunner<
             cute::float_e4m3_t, cute::bfloat16_t, float, cute::float_ue8m0_t>>();
     }
     else
@@ -503,7 +503,7 @@ std::tuple<torch::Tensor, torch::Tensor> fp8_quant_and_transform_for_moe(
 
     auto stream = at::cuda::getCurrentCUDAStream(input.get_device());
 
-    cute_sm120_gemm::quantize_mxfp8_for_moe(
+    cute_sm12x_gemm::quantize_mxfp8_for_moe(
         output.data_ptr(),
         outScale.data_ptr(),
         input.data_ptr(),

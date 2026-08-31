@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "cute_sm120_gemm/cute_sm120_bf16_runner.h"
+#include "cute_sm12x_gemm/cute_sm12x_bf16_runner.h"
 
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
@@ -56,7 +56,7 @@ torch::Tensor gemm_bf16(
     auto stream = at::cuda::getCurrentCUDAStream(mat1.get_device());
     int num_sms = at::cuda::getDeviceProperties(
         mat1.get_device())->multiProcessorCount;
-    cute_sm120_gemm::CuteSm120Bf16GemmRunner runner;
+    cute_sm12x_gemm::CuteSm12xBf16GemmRunner runner;
     runner.gemm_bf16(
         out.data_ptr(), mat1.data_ptr(), mat2.data_ptr(),
         static_cast<int>(M), static_cast<int>(N), static_cast<int>(K),
@@ -112,7 +112,7 @@ torch::Tensor launch_batch_gemm_bf16(
     auto stream = at::cuda::getCurrentCUDAStream(mat1.get_device());
     int num_sms = at::cuda::getDeviceProperties(
         mat1.get_device())->multiProcessorCount;
-    cute_sm120_gemm::CuteSm120Bf16GemmRunner runner;
+    cute_sm12x_gemm::CuteSm12xBf16GemmRunner runner;
     runner.batch_gemm_bf16(
         out.data_ptr(), mat1.data_ptr(), mat2.data_ptr(),
         static_cast<int>(L), static_cast<int>(M),
@@ -195,7 +195,7 @@ torch::Tensor group_gemm_bf16_masked(
     auto stream = at::cuda::getCurrentCUDAStream(mat1.get_device());
     int num_sms = at::cuda::getDeviceProperties(
         mat1.get_device())->multiProcessorCount;
-    cute_sm120_gemm::CuteSm120Bf16GemmRunner runner;
+    cute_sm12x_gemm::CuteSm12xBf16GemmRunner runner;
     runner.group_gemm_bf16_masked(
         out.data_ptr(), mat1.data_ptr(), mat2.data_ptr(),
         static_cast<int32_t const*>(masked_m.data_ptr()),
@@ -253,7 +253,7 @@ torch::Tensor group_gemm_bf16_contiguous(
     auto stream = at::cuda::getCurrentCUDAStream(mat1.get_device());
     int num_sms = at::cuda::getDeviceProperties(
         mat1.get_device())->multiProcessorCount;
-    cute_sm120_gemm::CuteSm120Bf16GemmRunner runner;
+    cute_sm12x_gemm::CuteSm12xBf16GemmRunner runner;
     runner.group_gemm_bf16_contiguous(
         out.data_ptr(), mat1.data_ptr(), mat2.data_ptr(),
         static_cast<int32_t const*>(m_indices.data_ptr()),
@@ -315,7 +315,7 @@ torch::Tensor moe_gemm_bf16(
     auto stream = at::cuda::getCurrentCUDAStream(mat1.get_device());
     int num_sms = at::cuda::getDeviceProperties(
         mat1.get_device())->multiProcessorCount;
-    cute_sm120_gemm::CuteSm120Bf16GemmRunner runner;
+    cute_sm12x_gemm::CuteSm12xBf16GemmRunner runner;
     runner.moe_gemm_bf16(
         out.data_ptr(), mat1.data_ptr(), mat2.data_ptr(),
         static_cast<int32_t const*>(token_offset.data_ptr()),
@@ -377,7 +377,7 @@ torch::Tensor fused_moe_bf16(
     auto stream = at::cuda::getCurrentCUDAStream(mat1.get_device());
     int num_sms = at::cuda::getDeviceProperties(
         mat1.get_device())->multiProcessorCount;
-    cute_sm120_gemm::CuteSm120Bf16GemmRunner runner;
+    cute_sm12x_gemm::CuteSm12xBf16GemmRunner runner;
     runner.fused_moe_bf16(
         out.data_ptr(), mat1.data_ptr(), mat2.data_ptr(),
         static_cast<int32_t const*>(token_offset.data_ptr()),

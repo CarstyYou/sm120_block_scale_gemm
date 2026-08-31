@@ -1,4 +1,4 @@
-# SM120 MXFP8 / FP8 / BF16 GEMM
+# SM12x MXFP8 / FP8 / BF16 CuTe GEMM
 
 ## Purpose
 
@@ -16,19 +16,19 @@ custom operators.
 ├── 3rdparty/cutlass/               # Vendored CUTLASS source tree
 ├── kernels/
 │   ├── include/
-│   │   └── cute_sm120_gemm/
-│   │       ├── cute_sm120_mxfp8_runner.h
-│   │       ├── cute_sm120_fp8_runner.h
-│   │       ├── cute_sm120_bf16_runner.h
+│   │   └── cute_sm12x_gemm/
+│   │       ├── cute_sm12x_mxfp8_runner.h
+│   │       ├── cute_sm12x_fp8_runner.h
+│   │       ├── cute_sm12x_bf16_runner.h
 │   │       ├── sm120_blockscaled/   # MXFP8 kernel templates and builders
 │   │       ├── sm120_blockscaling/  # FP8 float-scale kernel templates
 │   │       ├── sm120_bf16/           # BF16 kernel templates and builders
 │   │       └── sm120_common/        # Shared scheduler / TMA / epilogue helpers
 │   └── src/
-│       └── cute_sm120_gemm/
-│           ├── cute_sm120_mxfp8_runner.cu
-│           ├── cute_sm120_fp8_runner.cu
-│           └── cute_sm120_bf16_runner.cu
+│       └── cute_sm12x_gemm/
+│           ├── cute_sm12x_mxfp8_runner.cu
+│           ├── cute_sm12x_fp8_runner.cu
+│           └── cute_sm12x_bf16_runner.cu
 ├── thop/
 │   ├── mxfp8GroupwiseGemm.cpp      # MXFP8 PyTorch op bindings
 │   ├── fp8GroupwiseGemm.cpp        # FP8 PyTorch op bindings

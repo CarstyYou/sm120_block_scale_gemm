@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "cute_sm120_gemm/cute_sm120_fp8_runner.h"
+#include "cute_sm12x_gemm/cute_sm12x_fp8_runner.h"
 
 #include <ATen/ATen.h>
 #include <ATen/cuda/CUDAContext.h>
@@ -26,7 +26,7 @@
 #include <memory>
 #include <vector>
 
-using namespace cute_sm120_gemm;
+using namespace cute_sm12x_gemm;
 
 namespace torch_ext
 {
@@ -35,7 +35,7 @@ namespace
 {
 
 using Fp8BlockScaleGemmRunnerPtr =
-    std::unique_ptr<CuteSm120Fp8GemmRunnerInterface>;
+    std::unique_ptr<CuteSm12xFp8GemmRunnerInterface>;
 
 Fp8BlockScaleGemmRunnerPtr get_gemm_runner(
     at::ScalarType a_type, at::ScalarType b_type)
@@ -43,7 +43,7 @@ Fp8BlockScaleGemmRunnerPtr get_gemm_runner(
     if (a_type == at::ScalarType::Float8_e4m3fn &&
         b_type == at::ScalarType::Float8_e4m3fn)
     {
-        return std::make_unique<CuteSm120Fp8GemmRunner<
+        return std::make_unique<CuteSm12xFp8GemmRunner<
             cute::float_e4m3_t, cute::bfloat16_t, float, float>>();
     }
     else
