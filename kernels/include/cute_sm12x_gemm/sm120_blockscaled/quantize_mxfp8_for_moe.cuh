@@ -58,6 +58,8 @@ __global__ void quantize_mxfp8_for_moe_kernel_sm120(
   constexpr int kLanesPerGroup = GranK / 16;
   constexpr int kGroupsPerWarp = 32 / kLanesPerGroup;
   constexpr int kInt32PerWarp  = kGroupsPerWarp / 4;
+  constexpr int PACK_NSF = sizeof(uint32_t) / sizeof(uint8_t);
+  constexpr int PACK_NK = GranK * PACK_NSF;
 
   extern __shared__ char shared_memory[];
   int32_t* smem_token_offset = reinterpret_cast<int32_t*>(shared_memory);
@@ -167,8 +169,12 @@ __global__ void quantize_mxfp8_for_moe_kernel_sm120(
       if (lane_id == base_lane) {
         uint32_t packed_scale = s0 | (s1 << 8) | (s2 << 16) | (s3 << 24);
         int64_t const out_row = k_block_idx * kInt32PerWarp + int32_idx;
-        auto cur_scale_ptr = scale_output + out_row * scale_leading_dim + scale_padded_offset;
-        *reinterpret_cast<uint32_t*>(&cur_scale_ptr[local_token_idx]) = packed_scale;
+        int64_t const valid_scale_rows =
+            sm120_common::math::ceil_div(size_k, static_cast<int64_t>(PACK_NK));
+        if (out_row < valid_scale_rows) {
+          auto cur_scale_ptr = scale_output + out_row * scale_leading_dim + scale_padded_offset;
+          *reinterpret_cast<uint32_t*>(&cur_scale_ptr[local_token_idx]) = packed_scale;
+        }
       }
     }
   }
